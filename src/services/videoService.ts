@@ -1,5 +1,6 @@
 import ytdl from '@distube/ytdl-core';
-import { env } from '~/env';
+import fs from 'fs';
+import path from 'path';
 import { Quality } from '~/types';
 
 const getStream = async (videoId: string, quality: Quality): Promise<string> => {
@@ -9,11 +10,11 @@ const getStream = async (videoId: string, quality: Quality): Promise<string> => 
 
   return videoUrl;
 };
-
+const agent = ytdl.createAgent(
+  JSON.parse(fs.readFileSync(path.join(process.cwd(), 'cookies.json')).toString()) as ytdl.Cookie[],
+);
 const getVideoUrl = async (videoId: string, quality: Quality) => {
-  const videoInfo = await ytdl.getInfo(`https://www.youtube.com/watch?v=${videoId}`, {
-    requestOptions: { headers: { cookie: env.COOKIES ?? '' } },
-  });
+  const videoInfo = await ytdl.getInfo(`https://www.youtube.com/watch?v=${videoId}`, { agent });
 
   const formats = videoInfo.formats
     .filter(
